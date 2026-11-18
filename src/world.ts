@@ -31,7 +31,7 @@ export class OpenCodeWorld implements World {
       this.ctx.cfg,
       (text) => {
         this.host?.pushDeferred(
-          { type: 'opencode.notice', origin: 'external', render: () => text },
+          { type: 'opencode.notice', origin: 'internal', render: () => text },
           { trigger: 'debounce' },
         );
       },
