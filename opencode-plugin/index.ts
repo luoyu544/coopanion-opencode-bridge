@@ -68,8 +68,8 @@ const DEFAULTS = {
   sessionTitle: true,
   log: true,
   timeoutMs: 3000,
-  quietMs: 8000,
-  completeCooldownMs: 60000,
+  quietMs: 45000,
+  completeCooldownMs: 10000,
   minTurnMs: 0,
 }
 
@@ -103,30 +103,40 @@ export default Plugin.define({
     // 会话上次“任务完成”提醒的时间
     const lastComplete = new Map<string, number>()
 
+    function cancelQuiet(sessionID: string) {
+      const prev = quietTimers.get(sessionID)
+      if (prev) {
+        clearTimeout(prev)
+        timers.delete(prev)
+        quietTimers.delete(sessionID)
+      }
+    }
+
+    // 真正的“这一轮结束”判定，session.idle 与静默兜底共用。
+    function complete(sessionID: string, source: string) {
+      if (notified.has(sessionID)) return
+      if (pending.get(sessionID)?.size) return
+      const turn = turns.get(sessionID)
+      // 只聊一句、没调用工具、也没持续够久的一轮，不打扰。
+      if (turn && !turn.tools && Date.now() - turn.start < opt.minTurnMs) return
+      const last = lastComplete.get(sessionID) ?? 0
+      if (Date.now() - last < opt.completeCooldownMs) return
+      lastComplete.set(sessionID, Date.now())
+      notified.add(sessionID)
+      fire("task_complete", { type: source, data: { sessionID } } as AnyEvent)
+    }
+
     function markActivity(sessionID: string, turnStart = false) {
       if (turnStart) {
         turns.set(sessionID, { start: Date.now(), tools: false })
       } else if (!turns.has(sessionID)) {
         turns.set(sessionID, { start: Date.now(), tools: false })
       }
-      const prev = quietTimers.get(sessionID)
-      if (prev) {
-        clearTimeout(prev)
-        timers.delete(prev)
-      }
+      cancelQuiet(sessionID)
       const timer = setTimeout(() => {
         quietTimers.delete(sessionID)
         timers.delete(timer)
-        if (notified.has(sessionID)) return
-        if (pending.get(sessionID)?.size) return
-        const turn = turns.get(sessionID)
-        // 只聊一句、没调用工具、也没持续够久的一轮，不打扰。
-        if (turn && !turn.tools && Date.now() - turn.start < opt.minTurnMs) return
-        const last = lastComplete.get(sessionID) ?? 0
-        if (Date.now() - last < opt.completeCooldownMs) return
-        lastComplete.set(sessionID, Date.now())
-        notified.add(sessionID)
-        fire("task_complete", { type: "session.quiet", data: { sessionID } } as AnyEvent)
+        complete(sessionID, "session.quiet")
       }, opt.quietMs)
       timers.add(timer)
       quietTimers.set(sessionID, timer)
@@ -316,13 +326,10 @@ export default Plugin.define({
           break
         case "session.idle": {
           const sessionID = d.sessionID
+          if (!sessionID) break
+          cancelQuiet(sessionID)
           // 去抖：如果这轮 turn 末尾紧接着弹出了问答/权限，不要误报“任务完成”。
-          later(() => {
-            if (sessionID && pending.get(sessionID)?.size) return
-            if (sessionID && notified.has(sessionID)) return
-            if (sessionID) notified.add(sessionID)
-            fire("task_complete", event)
-          }, opt.debounceMs)
+          later(() => complete(sessionID, "session.idle"), opt.debounceMs)
           break
         }
         case "session.execution.failed":
