@@ -21,7 +21,7 @@ export const OPENCODE_DEFAULTS: OpenCodeConfigSection = {
   enabled: false,
   port: 17321,
   token: '',
-  cooldownMs: 1200,
+  cooldownMs: 10000,
   taskComplete: true,
   question: true,
   permission: true,

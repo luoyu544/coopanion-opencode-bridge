@@ -32,7 +32,7 @@ export class OpenCodeWorld implements World {
       (text) => {
         this.host?.pushDeferred(
           { type: 'opencode.notice', origin: 'external', render: () => text },
-          { trigger: 'flush' },
+          { trigger: 'debounce' },
         );
       },
       (line) => console.log(line),
