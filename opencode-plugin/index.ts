@@ -70,7 +70,7 @@ const DEFAULTS = {
   timeoutMs: 3000,
   quietMs: 8000,
   completeCooldownMs: 60000,
-  minTurnMs: 10000,
+  minTurnMs: 0,
 }
 
 const TITLES: Record<Kind, string> = {
@@ -105,8 +105,7 @@ export default Plugin.define({
 
     function markActivity(sessionID: string, turnStart = false) {
       if (turnStart) {
-        const prev = turns.get(sessionID)
-        turns.set(sessionID, { start: Date.now(), tools: prev?.tools ?? false })
+        turns.set(sessionID, { start: Date.now(), tools: false })
       } else if (!turns.has(sessionID)) {
         turns.set(sessionID, { start: Date.now(), tools: false })
       }
