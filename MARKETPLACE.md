@@ -14,16 +14,16 @@ $env:GH_TOKEN  = "github_pat_xxx"
 $env:NPM_TOKEN = "npm_xxx"
 ```
 
-把 `package.json` 里的 `repository` / `homepage` / `bugs` 改成你真实的 GitHub 用户名/仓库名（当前是示例 `luoyu/coopanion-opencode-bridge`）。
+`package.json` 里的 `repository` / `homepage` / `bugs` 已设为 `luoyu544/coopanion-opencode-bridge`。如换账号，记得同步修改。
 
 ## 1. 推送到 GitHub
 
 ```sh
-git remote add origin https://github.com/<你>/coopanion-opencode-bridge.git
+git remote add origin https://github.com/luoyu544/coopanion-opencode-bridge.git
 git push -u origin main
 ```
 
-或用 token：`https://<你>:<GH_TOKEN>@github.com/<你>/coopanion-opencode-bridge.git`
+或用 token：`https://luoyu544:<GH_TOKEN>@github.com/luoyu544/coopanion-opencode-bridge.git`
 
 ## 2. 发布到 npm
 
@@ -49,7 +49,7 @@ title: [other] cortico-world-opencode-bridge
 body:
 package: cortico-world-opencode-bridge
 npm: https://www.npmjs.com/package/cortico-world-opencode-bridge
-repository: https://github.com/<你>/coopanion-opencode-bridge
+repository: https://github.com/luoyu544/coopanion-opencode-bridge
 
 请收录到扩展市场。这是一个 Cortico World (kind=world, api=6)，
 接收 OpenCode companion 插件的 webhook，让 Coo 在任务完成、需要回答问题或确认权限时主动在气泡里提醒用户。

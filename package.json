@@ -8,11 +8,11 @@
   "author": "luoyu",
   "repository": {
     "type": "git",
-    "url": "https://github.com/luoyu/coopanion-opencode-bridge.git"
+    "url": "https://github.com/luoyu544/coopanion-opencode-bridge.git"
   },
-  "homepage": "https://github.com/luoyu/coopanion-opencode-bridge#readme",
+  "homepage": "https://github.com/luoyu544/coopanion-opencode-bridge#readme",
   "bugs": {
-    "url": "https://github.com/luoyu/coopanion-opencode-bridge/issues"
+    "url": "https://github.com/luoyu544/coopanion-opencode-bridge/issues"
   },
   "engines": {
     "node": ">=22"

@@ -8,7 +8,7 @@
   "author": "luoyu",
   "repository": {
     "type": "git",
-    "url": "https://github.com/luoyu/coopanion-opencode-bridge.git",
+    "url": "https://github.com/luoyu544/coopanion-opencode-bridge.git",
     "directory": "opencode-plugin"
   },
   "main": "./index.ts",
