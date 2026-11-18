@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import type {
   ConfigGroup,
   Language,
@@ -10,6 +11,8 @@ import type {
 import { OpenCodeBridge } from './bridge.ts';
 import { opencodeConfigGroup, type OpenCodeConfigSection } from './config.ts';
 
+const envPrompt = (file: string) => fileURLToPath(new URL(file, import.meta.url));
+
 export class OpenCodeWorld implements World {
   readonly id = 'opencode';
   private host: WorldHost | null = null;
@@ -17,8 +20,8 @@ export class OpenCodeWorld implements World {
 
   constructor(private readonly ctx: WorldContext<OpenCodeConfigSection>) {}
 
-  envPromptVars(): null {
-    return null;
+  envPromptVars(): Record<string, string> {
+    return {};
   }
 
   tools(): ToolDef[] {
@@ -69,6 +72,13 @@ export class OpenCodeWorld implements World {
       }],
       config: [opencodeConfigGroup(language) as ConfigGroup],
       panels: [{ id: 'status', title: zh ? '运行状态' : 'Status', getMethods: ['status'] }],
+      promptDocs: [{
+        key: 'worlds.opencode.envPrompt',
+        title: zh ? 'OpenCode 提醒 · 环境提示词' : 'OpenCode Bridge · Environment prompt',
+        description: zh ? '收到 OpenCode 提醒时在气泡里转达。' : 'Relay OpenCode reminders in the bubble.',
+        path: envPrompt(zh ? './ENV_PROMPT.md' : './ENV_PROMPT.en.md'),
+        role: 'envPrompt',
+      }],
       invoke: async (_panel: string, method: string): Promise<unknown> => {
         if (method === 'status') return status();
         if (method === 'test') {
