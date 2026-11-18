@@ -39,7 +39,7 @@ export function reminderText(r: Reminder, cfg: OpenCodeConfigSection): string | 
     case 'task_complete':
     default:
       if (!cfg.taskComplete) return null;
-      return `[OpenCode 提醒] 用户正在用 OpenCode 编程。${session}的任务刚刚完成了。请用你自己的话，在气泡里简短提醒用户回去查看结果。`;
+      return `[OpenCode 提醒] 用户正在用 OpenCode 编程。${session}刚完成了一次新的任务（这是新的一次提醒，不是上一条的重复）。请用你自己的话，在气泡里简短提醒用户回去查看结果。`;
   }
 }
 

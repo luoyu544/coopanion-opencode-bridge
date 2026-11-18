@@ -53,6 +53,10 @@ export interface CompanionOptions {
   timeoutMs?: number
   /** 没有 session.idle 时，最后活动后静默多久算任务结束（毫秒） */
   quietMs?: number
+  /** 同一会话「任务完成」的最小间隔（毫秒），避免连续打断桌宠 */
+  completeCooldownMs?: number
+  /** 这一轮至少持续多久，或至少调用过一次工具，才算值得提醒（毫秒） */
+  minTurnMs?: number
 }
 
 const DEFAULTS = {
@@ -60,11 +64,13 @@ const DEFAULTS = {
   headers: {},
   events: { taskComplete: true, question: true, permission: true, error: false },
   debounceMs: 450,
-  cooldownMs: 1500,
+  cooldownMs: 3000,
   sessionTitle: true,
   log: true,
   timeoutMs: 3000,
-  quietMs: 6000,
+  quietMs: 8000,
+  completeCooldownMs: 60000,
+  minTurnMs: 10000,
 }
 
 const TITLES: Record<Kind, string> = {
@@ -92,9 +98,18 @@ export default Plugin.define({
     const quietTimers = new Map<string, ReturnType<typeof setTimeout>>()
     // 本轮已经报过“任务完成”的会话，防止重复提醒
     const notified = new Set<string>()
+    // 会话本轮的开始时间与是否调用过工具；只有“像干活”的一轮才提醒
+    const turns = new Map<string, { start: number; tools: boolean }>()
+    // 会话上次“任务完成”提醒的时间
+    const lastComplete = new Map<string, number>()
 
     function markActivity(sessionID: string, turnStart = false) {
-      if (turnStart) notified.delete(sessionID)
+      if (turnStart) {
+        const prev = turns.get(sessionID)
+        turns.set(sessionID, { start: Date.now(), tools: prev?.tools ?? false })
+      } else if (!turns.has(sessionID)) {
+        turns.set(sessionID, { start: Date.now(), tools: false })
+      }
       const prev = quietTimers.get(sessionID)
       if (prev) {
         clearTimeout(prev)
@@ -105,6 +120,12 @@ export default Plugin.define({
         timers.delete(timer)
         if (notified.has(sessionID)) return
         if (pending.get(sessionID)?.size) return
+        const turn = turns.get(sessionID)
+        // 只聊一句、没调用工具、也没持续够久的一轮，不打扰。
+        if (turn && !turn.tools && Date.now() - turn.start < opt.minTurnMs) return
+        const last = lastComplete.get(sessionID) ?? 0
+        if (Date.now() - last < opt.completeCooldownMs) return
+        lastComplete.set(sessionID, Date.now())
         notified.add(sessionID)
         fire("task_complete", { type: "session.quiet", data: { sessionID } } as AnyEvent)
       }, opt.quietMs)
@@ -167,7 +188,7 @@ export default Plugin.define({
       const prefix = sessionTitle ? `【${sessionTitle}】` : ""
       switch (kind) {
         case "task_complete":
-          return `${prefix}会话已完成任务，可以回来查看结果了。`
+          return `${prefix}会话刚完成了一次任务（新的一次，不是刚才的重复），可以回来查看结果了。`
         case "question":
           return `${prefix}${extractQuestion(d.form)}`
         case "permission":
@@ -268,6 +289,10 @@ export default Plugin.define({
       const sid = d.sessionID ?? d.form?.sessionID
       // 只要这个会话还在动，就把“静默即完成”的计时器往后推。
       if (typeof sid === "string" && event.type.startsWith("session.")) {
+        if (event.type === "session.tool.called") {
+          const turn = turns.get(sid)
+          if (turn) turn.tools = true
+        }
         markActivity(sid, event.type === "session.step.started" || event.type === "session.inbox.delivered")
       }
       switch (event.type) {
