@@ -1,0 +1,52 @@
+{
+  "name": "cortico-world-opencode-bridge",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Cortico / Coopanion World that receives OpenCode task events and makes the desktop pet remind you in its bubble.",
+  "keywords": ["cortico-world", "cortico", "coopanion", "opencode", "companion", "notification"],
+  "license": "MIT",
+  "author": "luoyu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luoyu/coopanion-opencode-bridge.git"
+  },
+  "homepage": "https://github.com/luoyu/coopanion-opencode-bridge#readme",
+  "bugs": {
+    "url": "https://github.com/luoyu/coopanion-opencode-bridge/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "os": ["win32", "darwin", "linux"],
+  "main": "./src/index.ts",
+  "cortico": {
+    "kind": "world",
+    "api": 6,
+    "displayName": "OpenCode 提醒桥",
+    "icon": "icon.svg",
+    "describe": "describe.json",
+    "webUiClient": "dist/webui.js",
+    "locales": {
+      "zh": {
+        "displayName": "OpenCode 提醒桥",
+        "description": "让桌宠在 OpenCode 任务完成、需要你回答问题或确认权限时主动在气泡里提醒你。本扩展提供接收端；还需在 OpenCode 端安装 companion 插件。"
+      },
+      "en": {
+        "displayName": "OpenCode Bridge",
+        "description": "Makes your desktop pet proactively remind you in its bubble when an OpenCode task finishes or needs your answer/approval. Includes the receiver; install the companion plugin on the OpenCode side too."
+      }
+    },
+    "tags": ["companion", "notification", "external-setup"]
+  },
+  "files": ["src", "dist", "icon.svg", "describe.json", "README.md", "CHANGELOG.md", "LICENSE", "MARKETPLACE.md"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build:webui": "node scripts/build-webui.mjs",
+    "prepack": "node scripts/build-webui.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
